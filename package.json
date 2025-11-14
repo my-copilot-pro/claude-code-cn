@@ -79,7 +79,7 @@
   "scripts": {
     "dev": "concurrently \"pnpm run dev:webview\" \"pnpm run watch:extension\"",
     "dev:webview": "vite --config src/webview/vite.config.ts --port 5173 --strictPort",
-    "build:extension": "tsx esbuild.t s --production",
+    "build:extension": "tsx esbuild.ts --production",
     "build:webview": "vite build --config src/webview/vite.config.ts",
     "build": "pnpm run build:webview && pnpm run build:extension",
     "compile:extension": "tsx esbuild.ts",
