@@ -5,7 +5,7 @@
     :default-expanded="shouldExpand"
   >
     <template #main>
-      <span class="tool-label">Task</span>
+      <span class="tool-label">任务</span>
       <span v-if="subagentType" class="agent-badge">{{ subagentType }}</span>
       <span v-if="description" class="description-text">{{ description }}</span>
     </template>
@@ -15,7 +15,7 @@
       <div v-if="prompt" class="prompt-section">
         <div class="section-header">
           <span class="codicon codicon-comment-discussion"></span>
-          <span>Prompt</span>
+          <span>提示</span>
         </div>
         <pre class="prompt-content">{{ prompt }}</pre>
       </div>

@@ -67,7 +67,6 @@ import {
     handleGetSession,
     handleExec,
     handleListFiles,
-    handleStatPath,
     handleOpenContent,
     handleOpenURL,
     handleOpenConfigFile,
@@ -711,12 +710,9 @@ export class ClaudeAgentService implements IClaudeAgentService {
             case "get_session_request":
                 return handleGetSession(request, this.handlerContext);
 
-        // 文件操作
-        case "list_files_request":
-            return handleListFiles(request, this.handlerContext);
-
-        case "stat_path_request":
-            return handleStatPath(request as any, this.handlerContext);
+            // 文件操作
+            case "list_files_request":
+                return handleListFiles(request, this.handlerContext);
 
             // 进程操作
             case "exec":
@@ -895,7 +891,7 @@ export class ClaudeAgentService implements IClaudeAgentService {
         await channel.query.setModel(model);
 
         // 保存到配置
-        await this.configService.updateValue('claudix.selectedModel', model);
+        await this.configService.updateValue('claudecodecn.selectedModel', model);
 
         this.logService.info(`[setModel] Set channel ${channelId} to model: ${model}`);
     }

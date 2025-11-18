@@ -9,6 +9,9 @@
         <h2 class="chat-title">{{ title }}</h2>
       </div>
       <div class="header-right">
+        <button class="settings-btn" title="设置" @click="$emit('switchToSettings')">
+          <span class="codicon codicon-settings-gear"></span>
+        </button>
         <button class="new-chat-btn" title="新开对话" @click="createNew">
           <span class="codicon codicon-plus"></span>
         </button>
@@ -26,11 +29,13 @@
             <div v-if="isBusy" class="emptyState">
               <div class="emptyWordmark">
                 <ClaudeWordmark class="emptyWordmarkSvg" />
+                <span class="version-text">中文版</span>
               </div>
             </div>
             <div v-else class="emptyState">
               <div class="emptyWordmark">
                 <ClaudeWordmark class="emptyWordmarkSvg" />
+                <span class="version-text">中文版</span>
               </div>
               <RandomTip :platform="platform" />
             </div>
@@ -130,7 +135,7 @@
   });
 
   // 现在所有访问都使用 Vue Ref（.value）
-  const title = computed(() => session.value?.summary.value || 'New Conversation');
+  const title = computed(() => session.value?.summary.value || '新对话');
   const messages = computed<any[]>(() => session.value?.messages.value ?? []);
   const isBusy = computed(() => session.value?.busy.value ?? false);
   const permissionMode = computed(
@@ -367,6 +372,7 @@
     display: flex;
     flex-direction: column;
     height: 100%;
+    min-width: 360px;
   }
 
   .chat-header {
@@ -382,8 +388,9 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    overflow: hidden;
     flex: 1;
+    min-width: 0;
+    overflow: hidden;
   }
 
   .menu-btn {
@@ -415,6 +422,9 @@
     font-size: 12px;
     font-weight: 600;
     color: var(--vscode-titleBar-activeForeground);
+    /* 自适应剩余空间，避免溢出 */
+    flex: 1;
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -423,6 +433,31 @@
   .header-right {
     display: flex;
     gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .settings-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+    color: var(--vscode-titleBar-activeForeground);
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    opacity: 0.7;
+  }
+
+  .settings-btn .codicon {
+    font-size: 12px;
+  }
+
+  .settings-btn:hover {
+    background: var(--vscode-toolbar-hoverBackground);
+    opacity: 1;
   }
 
   .new-chat-btn {
@@ -540,8 +575,28 @@
 
   .emptyWordmark {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
     margin-bottom: 24px;
+    gap: 4px;
+    position: relative;
+  }
+
+  .version-text {
+    font-size: 10px;
+    font-weight: 600;
+    color: #c8a2ff;
+    padding: 3px 6px;
+    border-radius: 4px;
+    background: rgba(147, 51, 234, 0.15);
+    border: 1px solid rgba(147, 51, 234, 0.3);
+    margin-top: 1px;
+    line-height: 1.2;
+    box-shadow:
+      0 0 8px rgba(147, 51, 234, 0.25),
+      0 0 16px rgba(147, 51, 234, 0.15),
+      inset 0 0 8px rgba(147, 51, 234, 0.1);
+    backdrop-filter: blur(4px);
+    letter-spacing: 0.3px;
   }
 </style>

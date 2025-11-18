@@ -6,6 +6,7 @@
     @click="handleClick"
     :title="fullPath"
   >
+    <FileIcon :file-name="fileName" :size="14" class="file-icon" />
     <span class="filepath-name">{{ fileName }}</span>
   </button>
 </template>
@@ -13,6 +14,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import type { ToolContext } from '@/types/tool';
+import FileIcon from '@/components/FileIcon.vue';
 
 interface Props {
   filePath: string;
@@ -72,6 +74,11 @@ function handleClick(event: MouseEvent) {
     var(--vscode-list-hoverBackground) 50%,
     transparent
   );
+}
+
+.file-icon {
+  flex-shrink: 0;
+  opacity: 0.9;
 }
 
 .filepath-name {

@@ -12,7 +12,7 @@
           style="color: var(--vscode-foreground); opacity: 0.6; font-size: 12px;"
         />
         <div style="font-size: 12px; color: var(--vscode-input-placeholderForeground); opacity: 0.8;">
-          <span>{{ queuedMessages.length }} Queued</span>
+          <span>{{ queuedMessages.length }} 条待发送</span>
         </div>
       </div>
     </div>
@@ -53,7 +53,7 @@
           <div
             class="anysphere-icon-button"
             @click="$emit('remove', message.id)"
-            title="Remove from queue"
+            title="从队列中移除"
           >
             <span class="codicon codicon-trashcan text-[12px]!"></span>
           </div>
@@ -61,7 +61,7 @@
           <div
             class="anysphere-icon-button"
             @click="$emit('sendNow', message.id)"
-            title="Send immediately (interrupt current conversation)"
+            title="立即发送（中断当前对话）"
           >
             <span class="codicon codicon-arrow-up-two text-[12px]!"></span>
           </div>

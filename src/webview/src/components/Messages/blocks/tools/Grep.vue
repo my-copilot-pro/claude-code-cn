@@ -5,7 +5,7 @@
     :tool-result="toolResult"
   >
     <template #main>
-      <span class="tool-label">Grep</span>
+      <span class="tool-label">文本搜索</span>
       <code v-if="pattern" class="pattern-text">{{ pattern }}</code>
     </template>
 
@@ -149,6 +149,8 @@ const fileCount = computed(() => resultFiles.value.length);
   font-weight: 500;
   color: var(--vscode-foreground);
   font-size: 0.9em;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .pattern-text {
@@ -159,6 +161,28 @@ const fileCount = computed(() => resultFiles.value.length);
   border-radius: 3px;
   font-weight: 500;
   font-size: 0.9em;
+  overflow-x: auto;
+  max-width: 100%;
+  white-space: nowrap;
+  flex-shrink: 1;
+  min-width: 0;
+}
+
+.pattern-text::-webkit-scrollbar {
+  height: 4px;
+}
+
+.pattern-text::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.pattern-text::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--vscode-scrollbarSlider-background) 80%, transparent);
+  border-radius: 2px;
+}
+
+.pattern-text::-webkit-scrollbar-thumb:hover {
+  background: var(--vscode-scrollbarSlider-hoverBackground);
 }
 
 .options-section,

@@ -5,7 +5,7 @@
     :default-expanded="shouldExpand"
   >
     <template #main>
-      <span class="tool-label">Fetch</span>
+      <span class="tool-label">获取</span>
       <a v-if="url" :href="url" target="_blank" class="url-link" @click.stop>
         {{ displayUrl }}
       </a>
@@ -18,13 +18,13 @@
     <template #expandable>
       <!-- Prompt -->
       <div v-if="prompt" class="section">
-        <div class="section-label">Prompt</div>
+        <div class="section-label">提示</div>
         <div class="section-value">{{ prompt }}</div>
       </div>
 
       <!-- Response Result -->
       <div v-if="result" class="section">
-        <div class="section-label">Response</div>
+        <div class="section-label">响应</div>
         <pre class="result-content">{{ result }}</pre>
       </div>
 

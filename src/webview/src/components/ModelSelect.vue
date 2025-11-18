@@ -1,6 +1,6 @@
 <template>
   <DropdownTrigger
-    align="left"
+    align="center"
     :close-on-click-outside="true"
   >
     <template #trigger>

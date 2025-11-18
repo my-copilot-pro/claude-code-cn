@@ -1,113 +1,113 @@
-# API Reference
+# API 参考文档
 
-## DI Framework API
+## DI 框架 API
 
 ### createDecorator
 
-Create a service identifier decorator.
+创建服务标识符装饰器。
 
 ```typescript
 function createDecorator<T>(serviceId: string): ServiceIdentifier<T>
 ```
 
-**Parameters:**
-- `serviceId`: Unique identifier for the service
+**参数:**
+- `serviceId`: 服务的唯一标识符
 
-**Returns:**
-- `ServiceIdentifier<T>`: Service identifier that can be used as a decorator
+**返回值:**
+- `ServiceIdentifier<T>`: 可用作装饰器的服务标识符
 
-**Example:**
+**示例:**
 ```typescript
 export const IMyService = createDecorator<IMyService>('myService');
 ```
 
 ### InstantiationServiceBuilder
 
-Service builder for creating the DI container with immutability protection.
+用于创建具有不可变性保护的 DI 容器的服务构建器。
 
 #### constructor
 
-Create a new builder instance.
+创建新的构建器实例。
 
 ```typescript
 constructor(entries?: ServiceCollection | [ServiceIdentifier<unknown>, unknown][])
 ```
 
-**Parameters:**
-- `entries` (optional): Initial service collection or entries array
+**参数:**
+- `entries` (可选): 初始服务集合或条目数组
 
-**Example:**
+**示例:**
 ```typescript
 const builder = new InstantiationServiceBuilder();
 ```
 
 #### define
 
-Define a service in the builder.
+在构建器中定义服务。
 
 ```typescript
 define<T>(id: ServiceIdentifier<T>, instance: T | SyncDescriptor<T>): void
 ```
 
-**Parameters:**
-- `id`: Service identifier
-- `instance`: Service instance or descriptor
+**参数:**
+- `id`: 服务标识符
+- `instance`: 服务实例或描述符
 
-**Throws:**
-- Error if the builder is already sealed
+**抛出异常:**
+- 如果构建器已被封存则抛出错误
 
-**Example:**
+**示例:**
 ```typescript
 builder.define(ILogService, new SyncDescriptor(LogService));
-builder.define(IMyService, new MyService()); // Direct instance
+builder.define(IMyService, new MyService()); // 直接实例
 ```
 
 #### seal
 
-Seal the builder and create the InstantiationService.
+封存构建器并创建 InstantiationService。
 
 ```typescript
 seal(): IInstantiationService
 ```
 
-**Returns:**
-- `IInstantiationService`: The sealed instantiation service
+**返回值:**
+- `IInstantiationService`: 已封存的实例化服务
 
-**Throws:**
-- Error if the builder is already sealed
+**抛出异常:**
+- 如果构建器已被封存则抛出错误
 
-**Example:**
+**示例:**
 ```typescript
 const instantiationService = builder.seal();
-// builder.define(...) will now throw an error
+// builder.define(...) 现在会抛出错误
 ```
 
 ### InstantiationService
 
-DI container implementation class.
+DI 容器实现类。
 
 #### createInstance
 
-Create an instance of a class with automatic dependency injection.
+创建类的实例并自动注入依赖。
 
 ```typescript
 createInstance<T>(ctor: Constructor<T>, ...args: any[]): T
 ```
 
-**Example:**
+**示例:**
 ```typescript
 const instance = instantiationService.createInstance(MyClass);
 ```
 
 #### invokeFunction
 
-Execute a function with service accessor.
+使用服务访问器执行函数。
 
 ```typescript
 invokeFunction<R>(fn: (accessor: ServicesAccessor) => R): R
 ```
 
-**Example:**
+**示例:**
 ```typescript
 instantiationService.invokeFunction(accessor => {
     const service = accessor.get(IMyService);
@@ -117,7 +117,7 @@ instantiationService.invokeFunction(accessor => {
 
 #### createChild
 
-Create a child container.
+创建子容器。
 
 ```typescript
 createChild(services: ServiceCollection): IInstantiationService
@@ -125,7 +125,7 @@ createChild(services: ServiceCollection): IInstantiationService
 
 ### SyncDescriptor
 
-Service descriptor for lazy instantiation.
+用于延迟实例化的服务描述符。
 
 ```typescript
 class SyncDescriptor<T> {
@@ -137,11 +137,11 @@ class SyncDescriptor<T> {
 }
 ```
 
-## Built-in Services API
+## 内置服务 API
 
 ### ILogService
 
-Logging service interface.
+日志服务接口。
 
 ```typescript
 interface ILogService {
@@ -162,16 +162,16 @@ enum LogLevel {
 }
 ```
 
-**Example:**
+**示例:**
 ```typescript
-logService.info('Application started');
-logService.error(new Error('Something went wrong'));
+logService.info('应用程序已启动');
+logService.error(new Error('出错了'));
 logService.setLevel(LogLevel.Debug);
 ```
 
 ### IConfigurationService
 
-Configuration service interface.
+配置服务接口。
 
 ```typescript
 interface IConfigurationService {
@@ -181,7 +181,7 @@ interface IConfigurationService {
 }
 ```
 
-**Example:**
+**示例:**
 ```typescript
 const timeout = configService.getValue<number>('myExt.timeout', 5000);
 await configService.updateValue('myExt.enabled', true);
@@ -189,7 +189,7 @@ await configService.updateValue('myExt.enabled', true);
 
 ### IFileSystemService
 
-File system service interface.
+文件系统服务接口。
 
 ```typescript
 interface IFileSystemService {
@@ -203,7 +203,7 @@ interface IFileSystemService {
 }
 ```
 
-**Example:**
+**示例:**
 ```typescript
 const content = await fsService.readFile(uri);
 await fsService.writeFile(uri, new TextEncoder().encode('Hello'));
@@ -212,7 +212,7 @@ await fsService.createDirectory(dirUri);
 
 ### IWorkspaceService
 
-Workspace service interface.
+工作区服务接口。
 
 ```typescript
 interface IWorkspaceService {
@@ -222,7 +222,7 @@ interface IWorkspaceService {
 }
 ```
 
-**Example:**
+**示例:**
 ```typescript
 const folders = workspaceService.getWorkspaceFolders();
 const folder = workspaceService.getWorkspaceFolder(fileUri);
@@ -230,7 +230,7 @@ const folder = workspaceService.getWorkspaceFolder(fileUri);
 
 ### ITabsAndEditorsService
 
-Editor tabs service interface.
+编辑器标签服务接口。
 
 ```typescript
 interface ITabsAndEditorsService {
@@ -240,7 +240,7 @@ interface ITabsAndEditorsService {
 }
 ```
 
-**Example:**
+**示例:**
 ```typescript
 const editor = tabsService.getActiveTextEditor();
 const allEditors = tabsService.getVisibleTextEditors();
@@ -248,7 +248,7 @@ const allEditors = tabsService.getVisibleTextEditors();
 
 ### ITerminalService
 
-Terminal service interface.
+终端服务接口。
 
 ```typescript
 interface ITerminalService {
@@ -258,7 +258,7 @@ interface ITerminalService {
 }
 ```
 
-**Example:**
+**示例:**
 ```typescript
 const terminal = terminalService.createTerminal({ name: 'My Terminal' });
 terminalService.sendText('npm install');
@@ -266,7 +266,7 @@ terminalService.sendText('npm install');
 
 ### ITelemetryService
 
-Telemetry service interface.
+遥测服务接口。
 
 ```typescript
 interface ITelemetryService {
@@ -275,7 +275,7 @@ interface ITelemetryService {
 }
 ```
 
-**Example:**
+**示例:**
 ```typescript
 telemetryService.logEvent('command.executed', { commandId: 'test' });
 telemetryService.logError(error, { context: 'startup' });
@@ -283,7 +283,7 @@ telemetryService.logError(error, { context: 'startup' });
 
 ### INotificationService
 
-Notification service interface.
+通知服务接口。
 
 ```typescript
 interface INotificationService {
@@ -293,15 +293,15 @@ interface INotificationService {
 }
 ```
 
-**Example:**
+**示例:**
 ```typescript
-await notificationService.showInformation('Task completed');
-const choice = await notificationService.showWarning('Continue?', 'Yes', 'No');
+await notificationService.showInformation('任务已完成');
+const choice = await notificationService.showWarning('是否继续?', '是', '否');
 ```
 
 ### IDialogService
 
-Dialog service interface.
+对话框服务接口。
 
 ```typescript
 interface IDialogService {
@@ -312,14 +312,14 @@ interface IDialogService {
 }
 ```
 
-**Example:**
+**示例:**
 ```typescript
-const input = await dialogService.showInputBox({ prompt: 'Enter name' });
-const choice = await dialogService.showQuickPick(['Option 1', 'Option 2']);
+const input = await dialogService.showInputBox({ prompt: '请输入名称' });
+const choice = await dialogService.showQuickPick(['选项 1', '选项 2']);
 const files = await dialogService.showOpenDialog({ canSelectMany: true });
 ```
 
-## Type Definitions
+## 类型定义
 
 ### ServiceIdentifier
 
@@ -345,4 +345,4 @@ interface ServicesAccessor {
 type BrandedService = { _serviceBrand: undefined };
 ```
 
-All service interfaces must include the `_serviceBrand: undefined` property.
+所有服务接口都必须包含 `_serviceBrand: undefined` 属性。

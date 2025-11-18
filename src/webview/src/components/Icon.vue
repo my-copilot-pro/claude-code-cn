@@ -93,7 +93,9 @@ const iconStyle = computed(() => {
   const style: Record<string, any> = {
     fontSize: typeof props.size === 'number' ? `${props.size}px` : props.size,
     lineHeight: 1,
-    display: 'inline-block',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     verticalAlign: 'middle'
   };
 
@@ -116,7 +118,6 @@ const iconStyle = computed(() => {
   width: 1em;
   height: 1em;
   fill: currentColor;
-  display: inline-block;
-  vertical-align: middle;
+  display: block;
 }
 </style>

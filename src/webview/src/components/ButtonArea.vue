@@ -24,22 +24,22 @@
           :percentage="progressPercentage"
         />
 
-        <!-- Thinking Toggle Button -->
-        <button
+        <!-- Thinking Toggle Button - 已隐藏 -->
+        <!-- <button
           class="action-button think-button"
           :class="{ 'thinking-active': isThinkingOn }"
           @click="handleThinkingToggle"
-          :aria-label="isThinkingOn ? 'Thinking on' : 'Thinking off'"
-          :title="isThinkingOn ? 'Thinking on' : 'Thinking off'"
+          :aria-label="isThinkingOn ? '思考模式开启' : '思考模式关闭'"
+          :title="isThinkingOn ? '思考模式开启' : '思考模式关闭'"
         >
           <span class="codicon codicon-brain text-[16px]!" />
-        </button>
+        </button> -->
 
-        <!-- Command Button with Dropdown -->
-        <DropdownTrigger
+        <!-- Command Button with Dropdown - 已隐藏 -->
+        <!-- <DropdownTrigger
           ref="commandDropdownRef"
           :show-search="true"
-          search-placeholder="Filter commands..."
+          :search-placeholder="'筛选命令...'"
           align="left"
           :selected-index="commandCompletion.activeIndex.value"
           :data-nav="commandCompletion.navigationMode.value"
@@ -47,17 +47,15 @@
           @close="handleDropdownClose"
           @search="handleSearch"
         >
-          <!-- 自定义触发器按钮 -->
           <template #trigger>
             <button
               class="action-button"
-              aria-label="Slash Commands"
+              :aria-label="'斜杠命令'"
             >
               <span class="codicon codicon-italic text-[16px]!" />
             </button>
           </template>
 
-          <!-- 下拉内容 -->
           <template #content="{ close }">
             <div @mouseleave="commandCompletion.handleMouseLeave">
               <template v-for="(item, index) in commandCompletion.items.value" :key="item.id">
@@ -74,13 +72,13 @@
               </template>
             </div>
           </template>
-        </DropdownTrigger>
+        </DropdownTrigger> -->
 
-        <!-- Mention Button with Dropdown -->
-        <DropdownTrigger
+        <!-- Mention Button with Dropdown - 已隐藏 -->
+        <!-- <DropdownTrigger
           ref="mentionDropdownRef"
           :show-search="true"
-          search-placeholder="Search files..."
+          :search-placeholder="'搜索文件...'"
           align="left"
           :selected-index="fileCompletion.activeIndex.value"
           :data-nav="fileCompletion.navigationMode.value"
@@ -88,17 +86,15 @@
           @close="handleMentionDropdownClose"
           @search="handleMentionSearch"
         >
-          <!-- 自定义触发器按钮 -->
           <template #trigger>
             <button
               class="action-button"
-              aria-label="Mention File"
+              :aria-label="'引用文件'"
             >
               <span class="codicon codicon-mention text-[16px]!" />
             </button>
           </template>
 
-          <!-- 下拉内容 -->
           <template #content="{ close }">
             <div @mouseleave="fileCompletion.handleMouseLeave">
               <template v-for="(item, index) in fileCompletion.items.value" :key="item.id">
@@ -109,7 +105,6 @@
                   @click="(item) => handleFileClick(item, close)"
                   @mouseenter="fileCompletion.handleMouseEnter(index)"
                 >
-                  <!-- 使用 FileIcon 组件显示文件图标 -->
                   <template #icon v-if="'data' in item && item.data?.file">
                     <FileIcon :file-name="item.data.file.name" :size="16" />
                   </template>
@@ -117,22 +112,22 @@
               </template>
             </div>
           </template>
-        </DropdownTrigger>
+        </DropdownTrigger> -->
 
-        <!-- Sparkle Button -->
-        <button
+        <!-- Sparkle Button - 已隐藏 -->
+        <!-- <button
           class="action-button"
           @click="handleSparkleClick"
-          aria-label="Sparkle"
+          :aria-label="'智能建议'"
         >
           <span class="codicon codicon-wand text-[16px]!" />
-        </button>
+        </button> -->
 
         <!-- Attach File Button -->
         <button
           class="action-button"
           @click="handleAttachClick"
-          aria-label="Attach File"
+          :aria-label="'添加附件'"
         >
           <span class="codicon codicon-attach text-[16px]!" />
           <input
@@ -150,7 +145,7 @@
           @click="handleSubmit"
           :disabled="submitVariant === 'disabled'"
           :data-variant="submitVariant"
-          :aria-label="submitVariant === 'stop' ? 'Stop Conversation' : 'Send Message'"
+          :aria-label="submitVariant === 'stop' ? '停止对话' : '发送消息'"
         >
           <span
             v-if="submitVariant === 'stop'"

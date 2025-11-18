@@ -278,7 +278,7 @@ export class ClaudeSdkService implements IClaudeSdkService {
      * 获取环境变量
      */
     private getEnvironmentVariables(): Record<string, string> {
-        const config = vscode.workspace.getConfiguration("claudix");
+        const config = vscode.workspace.getConfiguration("claudecodecn");
         const customVars = config.get<Array<{ name: string; value: string }>>("environmentVariables", []);
 
         const env = { ...process.env };

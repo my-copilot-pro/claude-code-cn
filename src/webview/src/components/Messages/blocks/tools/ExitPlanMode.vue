@@ -8,7 +8,7 @@
         <!-- Plan 标题栏 -->
         <div class="plan-header">
           <span class="codicon codicon-tasklist"></span>
-          <span class="plan-title">Plan</span>
+          <span class="plan-title">计划</span>
         </div>
 
         <!-- Plan 内容 -->

@@ -11,11 +11,18 @@
             v-if="currentPage === 'sessions'"
             key="sessions"
             @switch-to-chat="handleSwitchToChat"
+            @switch-to-settings="switchToPage('settings')"
           />
           <ChatPage
             v-else-if="currentPage === 'chat'"
             key="chat"
             @switch-to-sessions="switchToPage('sessions')"
+            @switch-to-settings="switchToPage('settings')"
+          />
+          <SettingsPage
+            v-else-if="currentPage === 'settings'"
+            key="settings"
+            @back="switchToPage('chat')"
           />
           <!-- IconTestPage -->
           <!-- <IconTestPage
@@ -33,12 +40,13 @@ import { ref, onMounted, provide } from 'vue';
 import { Motion } from 'motion-v';
 import SessionsPage from './pages/SessionsPage.vue';
 import ChatPage from './pages/ChatPage.vue';
+import SettingsPage from './pages/SettingsPage.vue';
 import './styles/claude-theme.css';
 import { useRuntime } from './composables/useRuntime';
 import { RuntimeKey } from './composables/runtimeContext';
 // import IconTestPage from './pages/IconTestPage.vue';
 
-const currentPage = ref<'sessions' | 'chat'>('chat');
+const currentPage = ref<'sessions' | 'chat' | 'settings'>('chat');
 const pageAnimation = ref({ opacity: 1, x: 0 });
 
 // 初始化运行时（通信与状态逻辑）
@@ -48,13 +56,18 @@ onMounted(() => {
 });
 provide(RuntimeKey, runtime);
 
-function switchToPage(page: 'sessions' | 'chat') {
+function switchToPage(page: 'sessions' | 'chat' | 'settings') {
   pageAnimation.value = { opacity: 0, x: 0 };
 
   setTimeout(() => {
     currentPage.value = page;
     if (page === 'sessions') {
       pageAnimation.value = { opacity: 0.7, x: -3 };
+      setTimeout(() => {
+        pageAnimation.value = { opacity: 1, x: 0 };
+      }, 50);
+    } else if (page === 'settings') {
+      pageAnimation.value = { opacity: 0.7, x: 3 };
       setTimeout(() => {
         pageAnimation.value = { opacity: 1, x: 0 };
       }, 50);
@@ -85,7 +98,8 @@ function handleSwitchToChat(sessionId?: string) {
 
 .app-main {
   flex: 1;
-  overflow: hidden;
+  overflow-y: hidden;
+  overflow-x: auto;
 }
 
 .page-container {

@@ -12,7 +12,7 @@
           style="color: var(--vscode-foreground); opacity: 0.6; font-size: 12px; transition: transform 0.1s;"
         />
         <div style="font-size: 12px; color: var(--vscode-input-placeholderForeground); opacity: 0.8;">
-          {{ todos.length }} To-dos
+          {{ todos.length }} 任务清单
         </div>
       </div>
     </div>

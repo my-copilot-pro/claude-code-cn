@@ -23,6 +23,8 @@ import { IWebViewService, WebViewService } from './webViewService';
 import { IClaudeSdkService, ClaudeSdkService } from './claude/ClaudeSdkService';
 import { IClaudeSessionService, ClaudeSessionService } from './claude/ClaudeSessionService';
 import { IClaudeAgentService, ClaudeAgentService } from './claude/ClaudeAgentService';
+import { IClaudeSettingsService, ClaudeSettingsService } from './claudeSettingsService';
+import { ICCSwitchSettingsService, CCSwitchSettingsService } from './ccSwitchSettingsService';
 
 /**
  * Register all services to the builder
@@ -62,6 +64,8 @@ export function registerServices(
 	builder.define(IClaudeSdkService, new SyncDescriptor(ClaudeSdkService, [context]));
 	builder.define(IClaudeSessionService, new SyncDescriptor(ClaudeSessionService));
 	builder.define(IClaudeAgentService, new SyncDescriptor(ClaudeAgentService));
+	builder.define(IClaudeSettingsService, new SyncDescriptor(ClaudeSettingsService));
+	builder.define(ICCSwitchSettingsService, new SyncDescriptor(CCSwitchSettingsService));
 }
 
 // Export all service interfaces for convenience
@@ -78,5 +82,7 @@ export {
 	IWebViewService,
 	IClaudeSdkService,
 	IClaudeSessionService,
-	IClaudeAgentService
+	IClaudeAgentService,
+	IClaudeSettingsService,
+	ICCSwitchSettingsService
 };

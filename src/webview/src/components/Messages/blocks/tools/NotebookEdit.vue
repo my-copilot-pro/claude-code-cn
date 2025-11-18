@@ -5,7 +5,7 @@
     :default-expanded="shouldExpand"
   >
     <template #main>
-      <span class="tool-label">NotebookEdit</span>
+      <span class="tool-label">笔记本编辑</span>
       <ToolFilePath v-if="notebookPath" :file-path="notebookPath" :context="context" />
       <span v-if="editMode" class="mode-badge" :class="`mode-${editMode}`">{{ editMode }}</span>
     </template>
@@ -13,13 +13,13 @@
     <template #expandable>
       <!-- Cell ID -->
       <div v-if="cellId" class="info-row">
-        <span class="info-label">cell_id:</span>
+        <span class="info-label">单元格ID:</span>
         <span class="info-value">{{ cellId }}</span>
       </div>
 
       <!-- New Source Content -->
       <div v-if="newSource" class="source-section">
-        <div class="section-label">new_source</div>
+        <div class="section-label">新内容</div>
         <pre class="source-content">{{ newSource }}</pre>
       </div>
 

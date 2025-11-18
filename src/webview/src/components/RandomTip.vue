@@ -18,18 +18,18 @@ const props = defineProps<Props>();
 const tips = computed(() => {
   const platformKey = props.platform === 'windows' ? 'Alt' : 'Option';
   return [
-    'What to do first? Ask about this codebase or we can start writing code.',
-    "Ready to code?\nLet's write something worth deploying.",
-    'Type /model to pick the right tool for the job.',
-    'Make a CLAUDE.md file for instructions Claude will read every single time.',
-    "Tired of repeating yourself? Tell Claude to remember what you've told it using CLAUDE.md.",
-    'Press Shift + Tab to automatically approve code edits.',
-    `Highlight text and press ${platformKey} + K to chat about it.`,
-    'Use planning mode to talk through big changes before a commit. Press Shift + Tab to cycle between modes.',
-    "One person's slop is another one's treasure.",
-    "It's a beautiful day to use the computer, don't you think?",
-    "You've come to the absolutely right place!",
-    'Use Claude Code in the terminal to configure MCP servers.\nThey\'ll work here, too!'
+    '先做什么？询问代码库相关问题或者开始编写代码。',
+    '准备好编程了吗？\n让我们写出值得部署的代码。',
+    '输入 /model 来选择合适的工具。',
+    '创建 CLAUDE.md 文件，Claude 每次都会阅读其中的说明。',
+    '厌倦重复说明？使用 CLAUDE.md 让 Claude 记住你的要求。',
+    '按 Shift + Tab 自动批准代码编辑。',
+    `选中文本并按 ${platformKey} + K 进行讨论。`,
+    '使用规划模式在提交前讨论重大更改。按 Shift + Tab 在模式间切换。',
+    '有人认为无用的东西，对另一个人可能是宝贝。',
+    '今天是使用电脑的好日子，你觉得呢？',
+    '你来对地方了！',
+    '在终端使用 Claude Code 配置 MCP 服务器。\n它们在这里也能工作！'
   ];
 });
 

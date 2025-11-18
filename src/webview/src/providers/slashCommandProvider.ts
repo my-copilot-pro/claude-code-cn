@@ -8,6 +8,29 @@ import type { DropdownItemType } from '../types/dropdown'
  * 从 CommandRegistry 获取并过滤 slash commands
  */
 
+// 斜杠命令描述的中文翻译映射
+const COMMAND_DESCRIPTION_ZH: Record<string, string> = {
+  'Clear conversation history and free up context': '清除对话历史并释放上下文',
+  'Visualize current context usage as a colored grid': '以彩色网格方式可视化当前上下文使用情况',
+  'Show the total cost and duration of the current session': '显示当前会话的总费用和持续时间',
+  'Initialize a new CLAUDE.md file with codebase documentation': '使用代码库文档初始化新的 CLAUDE.md 文件',
+  'Get comments from a GitHub pull request': '获取 GitHub Pull Request 的评论',
+  'View release notes': '查看发布说明',
+  'Review a pull request': '审查 Pull Request',
+  'Complete a security review of the pending changes on the current branch': '完成当前分支待处理更改的安全审查',
+  'List current todo items': '列出当前待办事项'
+}
+
+/**
+ * 获取本地化的命令描述
+ * @param originalDescription 原始英文描述
+ * @returns 中文描述（如果有映射）或原始描述
+ */
+function getLocalizedDescription(originalDescription: string | undefined): string | undefined {
+  if (!originalDescription) return originalDescription
+  return COMMAND_DESCRIPTION_ZH[originalDescription] || originalDescription
+}
+
 // 带 section 信息的命令
 export interface CommandWithSection extends CommandAction {
   section: string
@@ -18,13 +41,11 @@ export interface CommandWithSection extends CommandAction {
  *
  * @param query 搜索查询（可选）
  * @param runtime Runtime 实例
- * @param _signal 未使用,仅为保持接口一致性
  * @returns 命令列表
  */
 export function getSlashCommands(
   query: string,
-  runtime: RuntimeInstance | undefined,
-  _signal?: AbortSignal
+  runtime: RuntimeInstance | undefined
 ): CommandAction[] {
   if (!runtime) return []
 
@@ -96,7 +117,7 @@ export function commandToDropdownItem(command: CommandAction): DropdownItemType 
   return {
     id: command.id,
     label: command.label,
-    detail: command.description,
+    detail: getLocalizedDescription(command.description),
     icon: 'codicon-symbol-method',
     type: 'command',
     data: { commandId: command.id, command }

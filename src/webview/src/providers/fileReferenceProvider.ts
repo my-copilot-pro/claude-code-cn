@@ -14,13 +14,11 @@ export interface FileReference {
  * 获取文件列表
  * @param query 搜索查询
  * @param runtime Runtime 实例
- * @param signal 可选的 AbortSignal,用于取消请求
  * @returns 文件引用数组
  */
 export async function getFileReferences(
   query: string,
-  runtime: RuntimeInstance | undefined,
-  signal?: AbortSignal
+  runtime: RuntimeInstance | undefined
 ): Promise<FileReference[]> {
   if (!runtime) {
     console.warn('[fileReferenceProvider] No runtime available')
@@ -30,17 +28,13 @@ export async function getFileReferences(
   try {
     const connection = await runtime.connectionManager.get()
 
-    // 空查询传递空字符串,让后端返回顶层内容（目录 + 顶层文件）
-    const pattern = (query && query.trim()) ? query : ''
-    const response = await connection.listFiles(pattern, signal)
+    // 对空查询使用 '*' 默认模式，让后端列出前 N 个结果（上限 200）
+    const pattern = (query && query.trim()) ? query : '*'
+    const response = await connection.listFiles(pattern)
 
     // response.files 格式：{ path, name, type }
     return response.files || []
   } catch (error) {
-    // 如果是 AbortError,静默处理
-    if (error instanceof Error && error.name === 'AbortError') {
-      return []
-    }
     console.error('[fileReferenceProvider] Failed to list files:', error)
     return []
   }

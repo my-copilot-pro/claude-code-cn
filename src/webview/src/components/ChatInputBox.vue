@@ -7,35 +7,49 @@
         v-for="attachment in attachments"
         :key="attachment.id"
         class="attachment-item"
+        @click="isImageAttachment(attachment) ? handlePreviewImage(attachment) : null"
+        :class="{ 'is-image': isImageAttachment(attachment) }"
       >
         <div class="icon-wrapper">
-          <div class="attachment-icon">
+          <!-- 图片附件：显示缩略图 -->
+          <div v-if="isImageAttachment(attachment)" class="attachment-thumbnail">
+            <img :src="getImageDataUrl(attachment)" :alt="attachment.fileName" />
+          </div>
+          <!-- 非图片附件：显示图标 -->
+          <div v-else class="attachment-icon">
             <FileIcon :file-name="attachment.fileName" :size="16" />
           </div>
           <button
             class="remove-button"
             @click.stop="handleRemoveAttachment(attachment.id)"
-            :aria-label="`Remove ${attachment.fileName}`"
+            :aria-label="`移除 ${attachment.fileName}`"
           >
             <span class="codicon codicon-close" />
           </button>
         </div>
-        <span class="attachment-name">{{ attachment.fileName }}</span>
+        <!-- 只有非图片附件才显示文件名 -->
+        <span v-if="!isImageAttachment(attachment)" class="attachment-name">{{ attachment.fileName }}</span>
       </div>
     </div>
+
+    <!-- 图片预览对话框 -->
+    <ImagePreviewDialog
+      :visible="previewVisible"
+      :image-src="previewImageSrc"
+      :image-alt="previewImageAlt"
+      @close="handleClosePreview"
+    />
 
     <!-- 第一行：输入框区域 -->
     <div
       ref="textareaRef"
       contenteditable="true"
       class="aislash-editor-input custom-scroll-container"
-      :data-placeholder="placeholder"
+      :data-placeholder="placeholderText"
       style="min-height: 34px; max-height: 240px; resize: none; overflow-y: hidden; word-wrap: break-word; white-space: pre-wrap; width: 100%; height: 34px;"
       @input="handleInput"
       @keydown="handleKeydown"
       @paste="handlePaste"
-      @dragover="handleDragOver"
-      @drop="handleDrop"
     />
 
     <!-- 第二行：ButtonArea 组件 + TokenIndicator -->
@@ -86,7 +100,7 @@
               />
             </template>
           </template>
-          <div v-else class="px-2 py-1 text-xs opacity-60">No matches</div>
+          <div v-else class="px-2 py-1 text-xs opacity-60">无匹配项</div>
         </div>
       </template>
     </Dropdown>
@@ -128,7 +142,7 @@
               </DropdownItem>
             </template>
           </template>
-          <div v-else class="px-2 py-1 text-xs opacity-60">No matches</div>
+          <div v-else class="px-2 py-1 text-xs opacity-60">无匹配项</div>
         </div>
       </template>
     </Dropdown>
@@ -141,11 +155,13 @@ import type { PermissionMode } from '@anthropic-ai/claude-agent-sdk'
 import FileIcon from './FileIcon.vue'
 import ButtonArea from './ButtonArea.vue'
 import type { AttachmentItem } from '../types/attachment'
+import { IMAGE_MEDIA_TYPES } from '../types/attachment'
 import { Dropdown, DropdownItem } from './Dropdown'
 import { RuntimeKey } from '../composables/runtimeContext'
 import { useCompletionDropdown } from '../composables/useCompletionDropdown'
 import { getSlashCommands, commandToDropdownItem } from '../providers/slashCommandProvider'
 import { getFileReferences, fileToDropdownItem } from '../providers/fileReferenceProvider'
+import ImagePreviewDialog from './ImagePreviewDialog.vue'
 
 interface Props {
   showProgress?: boolean
@@ -176,7 +192,7 @@ interface Emits {
 const props = withDefaults(defineProps<Props>(), {
   showProgress: true,
   progressPercentage: 48.7,
-  placeholder: 'Plan, @ for context, / for commands...',
+  placeholder: '',
   readonly: false,
   showSearch: false,
   selectedModel: 'claude-sonnet-4-5',
@@ -194,6 +210,14 @@ const content = ref('')
 const isLoading = ref(false)
 const textareaRef = ref<HTMLDivElement | null>(null)
 
+// 图片预览状态
+const previewVisible = ref(false)
+const previewImageSrc = ref('')
+const previewImageAlt = ref('')
+
+// 动态placeholder
+const placeholderText = computed(() => props.placeholder || '@ 引用文件，/ 执行命令...')
+
 const isSubmitDisabled = computed(() => {
   return !content.value.trim() || isLoading.value
 })
@@ -204,7 +228,7 @@ const isSubmitDisabled = computed(() => {
 const slashCompletion = useCompletionDropdown({
   mode: 'inline',
   trigger: '/',
-  provider: (query, signal) => getSlashCommands(query, runtime, signal),
+  provider: (query) => getSlashCommands(query, runtime),
   toDropdownItem: commandToDropdownItem,
   onSelect: (command, query) => {
     if (query) {
@@ -229,7 +253,7 @@ const slashCompletion = useCompletionDropdown({
 const fileCompletion = useCompletionDropdown({
   mode: 'inline',
   trigger: '@',
-  provider: (query, signal) => getFileReferences(query, runtime, signal),
+  provider: (query) => getFileReferences(query, runtime),
   toDropdownItem: fileToDropdownItem,
   onSelect: (file, query) => {
     if (query) {
@@ -413,10 +437,6 @@ function handleKeydown(event: KeyboardEvent) {
 
   // 其他按键处理
   if (event.key === 'Enter' && !event.shiftKey) {
-    // 检查是否正在输入法组合状态(中文输入法等)
-    if (event.isComposing) {
-      return
-    }
     event.preventDefault()
     handleSubmit()
   }
@@ -465,184 +485,6 @@ function handlePaste(event: ClipboardEvent) {
     // 触发附件添加
     handleAddFiles(dataTransfer.files)
   }
-}
-
-function getWorkspaceRoot(): string | undefined {
-  const r = runtime as any
-  if (!r) return undefined
-
-  try {
-    const sessionStore = r.sessionStore
-    const activeSession = sessionStore?.activeSession?.()
-    const cwdFromSession = activeSession?.cwd?.()
-    if (typeof cwdFromSession === 'string' && cwdFromSession) {
-      return cwdFromSession
-    }
-  } catch {
-    // ignore
-  }
-
-  try {
-    const connection = r.connectionManager?.connection?.()
-    const config = connection?.config?.()
-    if (config?.defaultCwd && typeof config.defaultCwd === 'string') {
-      return config.defaultCwd
-    }
-  } catch {
-    // ignore
-  }
-
-  return undefined
-}
-
-function toWorkspaceRelativePath(absoluteOrMixedPath: string): string {
-  const root = getWorkspaceRoot()
-  if (!root) return absoluteOrMixedPath
-
-  const normRoot = root.replace(/\\/g, '/').replace(/\/+$/, '')
-  let normPath = absoluteOrMixedPath.replace(/\\/g, '/')
-
-  // 处理 Windows 上 file:// URI 转换后形如 /C:/ 的情况
-  if (normPath.startsWith('/') && /^[A-Za-z]:\//.test(normPath.slice(1))) {
-    normPath = normPath.slice(1)
-  }
-
-  if (normPath === normRoot) {
-    return ''
-  }
-
-  if (normPath.startsWith(normRoot + '/')) {
-    return normPath.slice(normRoot.length + 1)
-  }
-
-  return absoluteOrMixedPath
-}
-
-function isFileDrop(event: DragEvent): boolean {
-  const dataTransfer = event.dataTransfer
-  if (!dataTransfer) return false
-
-  const types = Array.from(dataTransfer.types || [])
-  if (types.includes('Files')) return true
-  if (types.includes('text/uri-list')) return true
-
-  return false
-}
-
-function extractFilePathsFromDataTransfer(dataTransfer: DataTransfer): string[] {
-  const paths: string[] = []
-
-  const uriList = dataTransfer.getData('text/uri-list')
-  if (uriList) {
-    const lines = uriList
-      .split(/\r?\n/)
-      .map(line => line.trim())
-      .filter(line => line && !line.startsWith('#'))
-
-    for (const line of lines) {
-      try {
-        const url = new URL(line)
-        if (url.protocol === 'file:') {
-          const decodedPath = decodeURIComponent(url.pathname)
-          paths.push(toWorkspaceRelativePath(decodedPath))
-        } else {
-          paths.push(toWorkspaceRelativePath(line))
-        }
-      } catch {
-        paths.push(toWorkspaceRelativePath(line))
-      }
-    }
-  }
-
-  if (paths.length === 0 && dataTransfer.files && dataTransfer.files.length > 0) {
-    for (const file of Array.from(dataTransfer.files)) {
-      const fileWithPath = file as File & { path?: string }
-      if (fileWithPath.path) {
-        paths.push(toWorkspaceRelativePath(fileWithPath.path))
-      } else {
-        paths.push(toWorkspaceRelativePath(file.name))
-      }
-    }
-  }
-
-  return paths
-}
-
-async function statPaths(
-  paths: string[]
-): Promise<Record<string, 'file' | 'directory' | 'other' | 'not_found'>> {
-  const result: Record<string, 'file' | 'directory' | 'other' | 'not_found'> = {}
-  if (!paths.length) return result
-
-  const r = runtime as any
-  if (!r) return result
-
-  try {
-    const connection = await r.connectionManager.get()
-    const response = await connection.statPaths(paths)
-    const entries = (response?.entries ?? []) as Array<{ path: string; type: any }>
-    for (const entry of entries) {
-      if (!entry || typeof entry.path !== 'string') continue
-      const t = entry.type
-      if (t === 'file' || t === 'directory' || t === 'other' || t === 'not_found') {
-        result[entry.path] = t
-      }
-    }
-  } catch (error) {
-    console.warn('[ChatInputBox] statPaths failed:', error)
-  }
-
-  return result
-}
-
-function handleDragOver(event: DragEvent) {
-  // 仅在按住 Shift 且为文件/URI 拖拽时拦截，避免干扰普通文本拖拽
-  if (!event.shiftKey) return
-  if (!isFileDrop(event)) return
-
-  event.preventDefault()
-}
-
-async function handleDrop(event: DragEvent) {
-  const dataTransfer = event.dataTransfer
-  if (!dataTransfer) return
-
-  // 按住 Shift 时，将资源管理器文件拖入视为“插入路径”
-  if (!event.shiftKey) return
-  if (!isFileDrop(event)) return
-
-  event.preventDefault()
-
-  const paths = extractFilePathsFromDataTransfer(dataTransfer)
-  if (paths.length === 0) return
-
-  const types = await statPaths(paths)
-
-  const mentionText = paths
-    .map(p => {
-      const t = types[p]
-      const isDir = t === 'directory'
-      const normalized = isDir && !p.endsWith('/') ? `${p}/` : p
-      return `@${normalized}`
-    })
-    .join(' ')
-
-  const baseContent = content.value.trimEnd()
-  const updatedContent = baseContent ? `${baseContent} ${mentionText} ` : `${mentionText} `
-
-  content.value = updatedContent
-
-  if (textareaRef.value) {
-    textareaRef.value.textContent = updatedContent
-    placeCaretAtEnd(textareaRef.value)
-  }
-
-  emit('input', updatedContent)
-  autoResizeTextarea()
-
-  nextTick(() => {
-    textareaRef.value?.focus()
-  })
 }
 
 function handleSubmit() {
@@ -697,21 +539,49 @@ function handleRemoveAttachment(id: string) {
   emit('removeAttachment', id)
 }
 
-// 监听光标位置变化（仅在下拉菜单已打开时更新位置，避免重复触发请求）
-function handleSelectionChange() {
-  if (!content.value || !textareaRef.value) return
+// 检查附件是否为图片
+function isImageAttachment(attachment: AttachmentItem): boolean {
+  return IMAGE_MEDIA_TYPES.includes(attachment.mediaType as any)
+}
 
-  // 仅在下拉菜单已打开时更新位置
-  // 避免重复调用 evaluateQuery（已在 handleInput 中调用）
-  if (slashCompletion.isOpen.value) {
-    nextTick(() => {
-      updateDropdownPosition(slashCompletion, 'queryStart')
-    })
-  }
-  if (fileCompletion.isOpen.value) {
-    nextTick(() => {
-      updateDropdownPosition(fileCompletion, 'queryStart')
-    })
+// 获取图片的 data URL（用于预览）
+function getImageDataUrl(attachment: AttachmentItem): string {
+  return `data:${attachment.mediaType};base64,${attachment.data}`
+}
+
+// 打开图片预览
+function handlePreviewImage(attachment: AttachmentItem) {
+  if (!isImageAttachment(attachment)) return
+
+  previewImageSrc.value = getImageDataUrl(attachment)
+  previewImageAlt.value = attachment.fileName
+  previewVisible.value = true
+}
+
+// 关闭图片预览
+function handleClosePreview() {
+  previewVisible.value = false
+  previewImageSrc.value = ''
+  previewImageAlt.value = ''
+}
+
+// 监听光标位置变化
+function handleSelectionChange() {
+  if (content.value && textareaRef.value) {
+    slashCompletion.evaluateQuery(content.value)
+    fileCompletion.evaluateQuery(content.value)
+
+    // 更新 dropdown 位置
+    if (slashCompletion.isOpen.value) {
+      nextTick(() => {
+        updateDropdownPosition(slashCompletion, 'queryStart')
+      })
+    }
+    if (fileCompletion.isOpen.value) {
+      nextTick(() => {
+        updateDropdownPosition(fileCompletion, 'queryStart')
+      })
+    }
   }
 }
 
@@ -810,12 +680,29 @@ defineExpose({
   border-color: var(--vscode-focusBorder);
 }
 
+/* 图片附件的特殊样式 */
+.attachment-item.is-image {
+  cursor: zoom-in;
+  padding: 0;
+  width: 52px;
+  height: 52px;
+  max-width: 52px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
 /* 图标和关闭按钮的重叠容器 */
 .icon-wrapper {
   position: relative;
   width: 16px;
   height: 16px;
   flex-shrink: 0;
+}
+
+/* 图片附件的 icon-wrapper 使用全尺寸 */
+.attachment-item.is-image .icon-wrapper {
+  width: 100%;
+  height: 100%;
 }
 
 .attachment-icon {
@@ -830,6 +717,28 @@ defineExpose({
   opacity: 1;
   transition: opacity 0.15s ease;
   scale: 0.8;
+}
+
+/* 图片缩略图样式 */
+.attachment-thumbnail {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 6px;
+  opacity: 1;
+  transition: opacity 0.15s ease;
+}
+
+.attachment-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 /* 确保图标样式正确应用（使用 :deep 穿透到 FileIcon 内部） */
@@ -872,17 +781,44 @@ defineExpose({
   transition: opacity 0.15s ease;
 }
 
+/* 图片附件的删除按钮样式 */
+.attachment-item.is-image .remove-button {
+  top: 2px;
+  right: 2px;
+  left: auto;
+  width: 20px;
+  height: 20px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  border-radius: 50%;
+  color: #fff;
+}
+
+.attachment-item.is-image .remove-button:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
+
 .remove-button .codicon {
   font-size: 14px;
 }
 
+.attachment-item.is-image .remove-button .codicon {
+  font-size: 12px;
+}
+
 /* hover attachment-item 时切换图标和按钮的显示 */
-.attachment-item:hover .attachment-icon {
+/* 非图片附件：隐藏图标，显示删除按钮 */
+.attachment-item:not(.is-image):hover .attachment-icon {
   opacity: 0;
 }
 
-.attachment-item:hover .remove-button {
+.attachment-item:not(.is-image):hover .remove-button {
   opacity: 0.8;
+}
+
+/* 图片附件：只显示删除按钮，不隐藏缩略图 */
+.attachment-item.is-image:hover .remove-button {
+  opacity: 1;
 }
 
 .remove-button:hover {

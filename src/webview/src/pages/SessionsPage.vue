@@ -5,7 +5,7 @@
         <button class="back-btn" @click="$emit('switchToChat')">
           <span class="codicon codicon-arrow-left"></span>
         </button>
-        <h2 class="page-title">Sessions</h2>
+        <h2 class="page-title">会话历史</h2>
       </div>
       <div class="header-center">
       </div>
@@ -32,7 +32,7 @@
         ref="searchInput"
         v-model="searchQuery"
         type="text"
-        placeholder="Search Agent/Chat Threads"
+        placeholder="搜索 Agent/聊天线程"
         class="search-input"
         @keydown.escape="hideSearch"
       >
@@ -42,7 +42,7 @@
       <!-- 加载状态 -->
       <div v-if="loading" class="loading-state">
         <div class="spinner"></div>
-        <p>加载会话历史中...</p>
+        <p>正在加载会话历史...</p>
       </div>
 
       <!-- 错误状态 -->
@@ -70,7 +70,7 @@
           @click="openSession(session)"
         >
             <div class="session-card-header">
-              <h3 class="session-title">{{ session.summary.value || 'New Conversation' }}</h3>
+              <h3 class="session-title">{{ session.summary.value || '新对话' }}</h3>
               <div class="session-date">{{ formatRelativeTime(session.lastModifiedTime.value) }}</div>
             </div>
 
@@ -201,11 +201,13 @@ function formatRelativeTime(input?: number | string | Date): string {
 
   const diff = Date.now() - date.getTime();
   if (diff < 60_000) return '刚刚';
-  if (diff < 3_600_000) return `${Math.max(1, Math.round(diff / 60_000))}分钟前`;
-  if (diff < 86_400_000) return `${Math.max(1, Math.round(diff / 3_600_000))}小时前`;
+  if (diff < 3_600_000) return `${Math.max(1, Math.round(diff / 60_000))} 分钟前`;
+  if (diff < 86_400_000) return `${Math.max(1, Math.round(diff / 3_600_000))} 小时前`;
   const days = Math.max(1, Math.round(diff / 86_400_000));
-  if (days < 7) return `${days}天前`;
-  return date.toLocaleDateString('zh-CN');
+  if (days < 7) return `${days} 天前`;
+  if (days < 30) return `${days} 天前`;
+  if (days < 365) return `${Math.round(days / 30)} 个月前`;
+  return '很久以前';
 }
 
 // 生命周期

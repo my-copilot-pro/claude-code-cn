@@ -7,7 +7,7 @@
   >
     <div class="permission-request-content">
       <div class="permission-request-header">
-        Do you want to proceed with <strong>{{ request.toolName }}</strong>?
+        是否允许执行 <strong>{{ getToolNameInChinese(request.toolName) }}</strong>?
       </div>
 
       <!-- 工具特定的权限 UI（预留扩展点） -->
@@ -23,7 +23,7 @@
       <div v-if="hasInputs" class="permission-request-description">
         <details>
           <summary>
-            <span>Details</span>
+            <span>详情</span>
             <svg
               class="chevron"
               width="12"
@@ -48,18 +48,18 @@
 
     <div class="button-container">
       <button class="button primary" @click="handleApprove">
-        <span class="shortcut-num">1</span> Yes
+        <span class="shortcut-num">1</span> 是
       </button>
       <button v-if="showSecondButton" class="button" @click="handleApproveAndDontAsk">
-        <span class="shortcut-num">2</span> Yes, and don't ask again
+        <span class="shortcut-num">2</span> 是，且不再询问
       </button>
       <button class="button" @click="handleReject">
-        <span class="shortcut-num">{{ showSecondButton ? '3' : '2' }}</span> No
+        <span class="shortcut-num">{{ showSecondButton ? '3' : '2' }}</span> 否
       </button>
       <input
         ref="inputRef"
         class="reject-message-input"
-        placeholder="Tell Claude what to do instead"
+        placeholder="告诉 Claude 应该做什么"
         v-model="rejectMessage"
         @keydown="handleKeyDown"
       />
@@ -83,6 +83,32 @@ const props = defineProps<Props>();
 const inputRef = ref<HTMLInputElement | null>(null);
 const rejectMessage = ref('');
 const modifiedInputs = ref<any | undefined>(undefined);
+
+// 工具名称中英文映射
+const toolNameMap: Record<string, string> = {
+  'Bash': '执行命令',
+  'BashOutput': '获取命令输出',
+  'Edit': '编辑文件',
+  'ExitPlanMode': '退出规划模式',
+  'Glob': '文件匹配',
+  'Grep': '搜索内容',
+  'KillShell': '终止进程',
+  'McpTool': 'MCP工具',
+  'MultiEdit': '批量编辑',
+  'NotebookEdit': '编辑笔记本',
+  'Read': '读取文件',
+  'Task': '执行任务',
+  'Write': '写入文件',
+  'WebFetch': '获取网页',
+  'WebSearch': '网页搜索',
+  'Skill': '执行技能',
+  'SlashCommand': '斜杠命令',
+  'TodoWrite': '编写待办',
+};
+
+const getToolNameInChinese = (toolName: string): string => {
+  return toolNameMap[toolName] || toolName;
+};
 
 const hasInputs = computed(() => Object.keys(props.request.inputs).length > 0);
 const showSecondButton = computed(
@@ -115,8 +141,8 @@ const handleApproveAndDontAsk = () => {
 const handleReject = () => {
   const trimmedMessage = rejectMessage.value.trim();
   const rejectionMessage = trimmedMessage
-    ? `The user doesn't want to proceed with this tool use. The tool use was rejected (eg. if it was a file edit, the new_string was NOT written to the file). The user provided the following reason for the rejection: ${trimmedMessage}`
-    : "The user doesn't want to proceed with this tool use. The tool use was rejected (eg. if it was a file edit, the new_string was NOT written to the file). STOP what you are doing and wait for the user to tell you how to proceed.";
+    ? `用户拒绝执行此工具。工具使用已被拒绝（例如，如果是文件编辑，new_string 未写入文件）。用户提供的拒绝原因：${trimmedMessage}`
+    : '用户拒绝执行此工具。工具使用已被拒绝（例如，如果是文件编辑，new_string 未写入文件）。停止当前操作并等待用户指示如何继续。';
 
   props.request.reject(rejectionMessage, !trimmedMessage);
 };

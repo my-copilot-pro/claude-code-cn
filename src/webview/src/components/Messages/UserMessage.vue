@@ -21,7 +21,7 @@
             <button
               class="restore-button"
               @click.stop="handleRestore"
-              title="Restore checkpoint"
+              title="恢复检查点"
             >
               <span class="codicon codicon-restore"></span>
             </button>
